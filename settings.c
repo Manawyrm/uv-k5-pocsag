@@ -17,10 +17,6 @@
 #include <string.h>
 
 #include "app/dtmf.h"
-#ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
-#endif
-#include "driver/bk1080.h"
 #include "driver/bk4819.h"
 #include "driver/eeprom.h"
 #include "misc.h"
