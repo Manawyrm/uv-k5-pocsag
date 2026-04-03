@@ -1390,11 +1390,7 @@ void BK4819_PlayCDCSSTail(void)
 
 void BK4819_PlayCTCSSTail(void)
 {
-	#ifdef ENABLE_CTCSS_TAIL_PHASE_SHIFT
-		BK4819_GenTail(2);       // 180° phase shift
-	#else
-		BK4819_GenTail(4);       // 55Hz tone freq
-	#endif
+	BK4819_GenTail(4);       // 55Hz tone freq
 
 	// REG_51
 	//

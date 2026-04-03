@@ -18,10 +18,6 @@
 #include <string.h>
 #include <stdio.h>     // NULL
 
-#ifdef ENABLE_AM_FIX
-	#include "am_fix.h"
-#endif
-
 #include "audio.h"
 #include "board.h"
 #include "misc.h"

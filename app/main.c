@@ -503,14 +503,6 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
 
 void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
-#ifdef ENABLE_FMRADIO
-	if (gFmRadioMode && Key != KEY_PTT && Key != KEY_EXIT) {
-		if (!bKeyHeld && bKeyPressed)
-			gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
-		return;
-	}
-#endif
-
 	if (gDTMF_InputMode && bKeyPressed && !bKeyHeld) {
 		const char Character = DTMF_GetCharacter(Key);
 		if (Character != 0xFF)

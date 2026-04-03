@@ -373,12 +373,6 @@ void UI_DisplayMenu(void)
 			}
 			break;
 
-		#ifdef ENABLE_AUDIO_BAR
-			case MENU_MIC_BAR:
-				strcpy(String, gSubMenu_OFF_ON[gSubMenuSelection]);
-				break;
-		#endif
-
 		case MENU_STEP: {
 			uint16_t step = gStepFrequencyTable[FREQUENCY_GetStepIdxFromSortedIdx(gSubMenuSelection)];
 			sprintf(String, "%d.%02ukHz", step / 100, step % 100);
@@ -579,18 +573,6 @@ void UI_DisplayMenu(void)
 			else
 				strcpy(String, "ALL");
 			break;
-
-		#ifdef ENABLE_ALARM
-			case MENU_AL_MOD:
-				sprintf(String, gSubMenu_AL_MOD[gSubMenuSelection]);
-				break;
-		#endif
-
-#ifdef ENABLE_DTMF_CALLING
-		case MENU_ANI_ID:
-			strcpy(String, gEeprom.ANI_DTMF_ID);
-			break;
-#endif
 		case MENU_UPCODE:
 			sprintf(String, "%.8s\n%.8s", gEeprom.DTMF_UP_CODE, gEeprom.DTMF_UP_CODE + 8);
 			break;
@@ -599,15 +581,6 @@ void UI_DisplayMenu(void)
 			sprintf(String, "%.8s\n%.8s", gEeprom.DTMF_DOWN_CODE, gEeprom.DTMF_DOWN_CODE + 8);
 			break;
 
-#ifdef ENABLE_DTMF_CALLING
-		case MENU_D_RSP:
-			strcpy(String, gSubMenu_D_RSP[gSubMenuSelection]);
-			break;
-
-		case MENU_D_HOLD:
-			sprintf(String, "%ds", gSubMenuSelection);
-			break;
-#endif
 		case MENU_D_PRE:
 			sprintf(String, "%d*10ms", gSubMenuSelection);
 			break;
@@ -619,16 +592,6 @@ void UI_DisplayMenu(void)
 		case MENU_BAT_TXT:
 			strcpy(String, gSubMenu_BAT_TXT[gSubMenuSelection]);
 			break;
-
-#ifdef ENABLE_DTMF_CALLING
-		case MENU_D_LIST:
-			gIsDtmfContactValid = DTMF_GetContact((int)gSubMenuSelection - 1, Contact);
-			if (!gIsDtmfContactValid)
-				strcpy(String, "NULL");
-			else
-				memcpy(String, Contact, 8);
-			break;
-#endif
 
 		case MENU_PONMSG:
 			strcpy(String, gSubMenu_PONMSG[gSubMenuSelection]);
@@ -654,21 +617,6 @@ void UI_DisplayMenu(void)
 			else
 				strcpy(String, gSubMenu_F_LOCK[gSubMenuSelection]);
 			break;
-
-		#ifdef ENABLE_F_CAL_MENU
-			case MENU_F_CALI:
-				{
-					const uint32_t value   = 22656 + gSubMenuSelection;
-					const uint32_t xtal_Hz = (0x4f0000u + value) * 5;
-
-					writeXtalFreqCal(gSubMenuSelection, false);
-
-					sprintf(String, "%d\n%u.%06u\nMHz",
-						gSubMenuSelection,
-						xtal_Hz / 1000000, xtal_Hz % 1000000);
-				}
-				break;
-		#endif
 
 		case MENU_BATCAL:
 		{
@@ -784,22 +732,10 @@ void UI_DisplayMenu(void)
 	if ((UI_MENU_GetCurrentMenuId() == MENU_R_CTCS || UI_MENU_GetCurrentMenuId() == MENU_R_DCS) && gCssBackgroundScan)
 		UI_PrintString("SCAN", menu_item_x1, menu_item_x2, 4, 8);
 
-#ifdef ENABLE_DTMF_CALLING
-	if (UI_MENU_GetCurrentMenuId() == MENU_D_LIST && gIsDtmfContactValid) {
-		Contact[11] = 0;
-		memcpy(&gDTMF_ID, Contact + 8, 4);
-		sprintf(String, "ID:%4s", gDTMF_ID);
-		UI_PrintString(String, menu_item_x1, menu_item_x2, 4, 8);
-	}
-#endif
-
 	if (UI_MENU_GetCurrentMenuId() == MENU_R_CTCS ||
 	    UI_MENU_GetCurrentMenuId() == MENU_T_CTCS ||
 	    UI_MENU_GetCurrentMenuId() == MENU_R_DCS  ||
 	    UI_MENU_GetCurrentMenuId() == MENU_T_DCS
-#ifdef ENABLE_DTMF_CALLING
-	    || UI_MENU_GetCurrentMenuId() == MENU_D_LIST
-#endif
 	) {
 		sprintf(String, "%2d", gSubMenuSelection);
 		UI_PrintStringSmallNormal(String, 105, 0, 0);
