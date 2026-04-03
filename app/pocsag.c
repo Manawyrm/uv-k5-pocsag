@@ -46,7 +46,7 @@ void send_pocsag_data()
         // 2<15:0> TONE2/FSK frequency control word: = freq (Hz) * 10.32444 for XTAL 13M/26M
         { BK4819_REG_72, 0x3065 }, // 1200 * 10.32444 MHz
 
-        { BK4819_REG_5D, 0x00D0 },	// Set FSK data length
+        { BK4819_REG_5D, 0xD000 },	// Set FSK data length
         { BK4819_REG_59, 0x8068 },	// 4 byte sync length, 6 byte preamble, clear TX FIFO
         { BK4819_REG_59, 0x0068 },	// Same, but clear TX FIFO is now unset (clearing done)
         { BK4819_REG_5A, 0x5555 },	// First two sync bytes
@@ -57,11 +57,15 @@ void send_pocsag_data()
     BK4819_SetAF(BK4819_AF_MUTE);
 
     // Set Deviation
-    //uint16_t gBK4819_DefaultDeviation;
-    //gBK4819_DefaultDeviation = BK4819_ReadRegister(BK4819_REG_40);
-    //BK4819_WriteRegister(BK4819_REG_40, (gBK4819_DefaultDeviation & 0xE000) | 0x1383);
+    uint16_t gBK4819_DefaultDeviation;
+    gBK4819_DefaultDeviation = BK4819_ReadRegister(BK4819_REG_40);
+    BK4819_WriteRegister(BK4819_REG_40, (gBK4819_DefaultDeviation & 0xE000) | 0x1383);
     // Mute output audio and bypass all AF TX filters.
     //BK4819_WriteRegister(BK4819_REG_47, (2u << 12) | (BK4819_AF_MUTE << 8) | (1u << 6) | 1);
+
+    // bypass all AF TX filters, AF output inverse mode: non-inverse
+    //BK4819_WriteRegister(BK4819_REG_47, 0x4141);
+
     // Disable TX DC filter.
     BK4819_WriteRegister(BK4819_REG_7E, (BK4819_ReadRegister(BK4819_REG_7E) & 0xFFC7) | 0x8000);
     // Disable Voice FM AF TX filters
@@ -103,23 +107,8 @@ void send_pocsag_data()
 
     uint16_t *packet16 = (uint16_t*)packet;
     for (unsigned int i = 0; i < 104; i++) {
-        BK4819_WriteRegister(BK4819_REG_5F, packet16[i]);
+        BK4819_WriteRegister(BK4819_REG_5F, ~packet16[i]);
     }
-
-    /*
-    for (unsigned int i = 0; i < 208; i++) {
-        uint16_t bits = 0x0000;
-
-        for (unsigned int bit = 0; bit < 8; bit++)
-        {
-            if ((packet[i] >> bit) & 0x01) {
-                bits |= (1 << (bit * 2));
-                bits |= (1 << ((bit * 2) + 1));
-            }
-        }
-
-        BK4819_WriteRegister(BK4819_REG_5F, bits);
-    }*/
 
     SYSTEM_DelayMs(20);
 
@@ -137,10 +126,6 @@ void send_pocsag_data()
 
 void pocsag_tx()
 {
-   // APRS_SendPacket(void);
-   // return;
-
-
     log("RADIO_SetTxParameters\r\n");
     RADIO_SetTxParameters();
 
