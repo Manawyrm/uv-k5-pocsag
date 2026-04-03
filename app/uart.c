@@ -19,9 +19,6 @@
 #if !defined(ENABLE_OVERLAY)
 	#include "ARMCM0.h"
 #endif
-#ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
-#endif
 #include "app/uart.h"
 #include "board.h"
 #include "bsp/dp32g030/dma.h"
@@ -236,10 +233,6 @@ static void CMD_0514(const uint8_t *pBuffer)
 
 	Timestamp = pCmd->Timestamp;
 
-	#ifdef ENABLE_FMRADIO
-		gFmRadioCountdown_500ms = fm_radio_countdown_500ms;
-	#endif
-
 	gSerialConfigCountDown_500ms = 12; // 6 sec
 	
 	// turn the LCD backlight off
@@ -259,10 +252,6 @@ static void CMD_051B(const uint8_t *pBuffer)
 		return;
 
 	gSerialConfigCountDown_500ms = 12; // 6 sec
-
-	#ifdef ENABLE_FMRADIO
-		gFmRadioCountdown_500ms = fm_radio_countdown_500ms;
-	#endif
 
 	memset(&Reply, 0, sizeof(Reply));
 	Reply.Header.ID   = 0x051C;
@@ -293,10 +282,6 @@ static void CMD_051D(const uint8_t *pBuffer)
 	gSerialConfigCountDown_500ms = 12; // 6 sec
 	
 	bReloadEeprom = false;
-
-	#ifdef ENABLE_FMRADIO
-		gFmRadioCountdown_500ms = fm_radio_countdown_500ms;
-	#endif
 
 	Reply.Header.ID   = 0x051E;
 	Reply.Header.Size = sizeof(Reply.Data);
@@ -360,9 +345,6 @@ static void CMD_052D(const uint8_t *pBuffer)
 	REPLY_052D_t      Reply;
 	bool              bIsLocked;
 
-	#ifdef ENABLE_FMRADIO
-		gFmRadioCountdown_500ms = fm_radio_countdown_500ms;
-	#endif
 	Reply.Header.ID   = 0x052E;
 	Reply.Header.Size = sizeof(Reply.Data);
 
@@ -413,13 +395,6 @@ static void CMD_052F(const uint8_t *pBuffer)
 	gEeprom.VfoInfo[0].pTX                           = &gEeprom.VfoInfo[0].freq_config_TX;
 	gEeprom.VfoInfo[0].TX_OFFSET_FREQUENCY_DIRECTION = TX_OFFSET_FREQUENCY_DIRECTION_OFF;
 	gEeprom.VfoInfo[0].DTMF_PTT_ID_TX_MODE           = PTT_ID_OFF;
-#ifdef ENABLE_DTMF_CALLING
-	gEeprom.VfoInfo[0].DTMF_DECODING_ENABLE          = false;
-#endif
-
-	#ifdef ENABLE_NOAA
-		gIsNoaaMode = false;
-	#endif
 
 	if (gCurrentFunction == FUNCTION_POWER_SAVE)
 		FUNCTION_Select(FUNCTION_FOREGROUND);
@@ -433,44 +408,6 @@ static void CMD_052F(const uint8_t *pBuffer)
 
 	SendVersion();
 }
-
-#ifdef ENABLE_UART_RW_BK_REGS
-static void CMD_0601_ReadBK4819Reg(const uint8_t *pBuffer)
-{
-	typedef struct  __attribute__((__packed__)) {
-		Header_t header;
-		uint8_t reg;
-	} CMD_0601_t;
-
-	CMD_0601_t *cmd = (CMD_0601_t*) pBuffer;
-
-	struct __attribute__((__packed__)) {
-		Header_t header;
-		struct __attribute__((__packed__)) {
-			uint8_t reg;
-			uint16_t value;
-		} data;
-	} reply;
-
-	reply.header.ID = 0x0601;
-	reply.header.Size = sizeof(reply.data);
-	reply.data.reg = cmd->reg;
-	reply.data.value = BK4819_ReadRegister(cmd->reg);
-	SendReply(&reply, sizeof(reply));
-}
-
-static void CMD_0602_WriteBK4819Reg(const uint8_t *pBuffer)
-{
-	typedef struct __attribute__((__packed__)) {
-		Header_t header;
-		uint8_t reg;
-		uint16_t value;
-	} CMD_0602_t;
-
-	CMD_0602_t *cmd = (CMD_0602_t*) pBuffer;
-	BK4819_WriteRegister(cmd->reg, cmd->value);
-}
-#endif
 
 bool UART_IsCommandAvailable(void)
 {
@@ -610,15 +547,5 @@ void UART_HandleCommand(void)
 				NVIC_SystemReset();
 			#endif
 			break;
-			
-#ifdef ENABLE_UART_RW_BK_REGS
-		case 0x0601:
-			CMD_0601_ReadBK4819Reg(UART_Command.Buffer);
-			break;
-		
-		case 0x0602:
-			CMD_0602_WriteBK4819Reg(UART_Command.Buffer);
-			break;
-#endif
 	}
 }
