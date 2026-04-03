@@ -60,19 +60,26 @@ void send_pocsag_data()
     uint16_t gBK4819_DefaultDeviation;
     gBK4819_DefaultDeviation = BK4819_ReadRegister(BK4819_REG_40);
     BK4819_WriteRegister(BK4819_REG_40, (gBK4819_DefaultDeviation & 0xE000) | 0x1383);
-    // Mute output audio and bypass all AF TX filters.
-    //BK4819_WriteRegister(BK4819_REG_47, (2u << 12) | (BK4819_AF_MUTE << 8) | (1u << 6) | 1);
 
     // bypass all AF TX filters, AF output inverse mode: non-inverse
     //BK4819_WriteRegister(BK4819_REG_47, 0x4141);
 
-    // Disable TX DC filter.
-    BK4819_WriteRegister(BK4819_REG_7E, (BK4819_ReadRegister(BK4819_REG_7E) & 0xFFC7) | 0x8000);
-    // Disable Voice FM AF TX filters
-    BK4819_WriteRegister(BK4819_REG_2B, (BK4819_ReadRegister(BK4819_REG_2B) & 0xFFF8) | 0x7);
+    // Disable DC filter (RX & TX).
+    BK4819_WriteRegister(BK4819_REG_7E, (BK4819_ReadRegister(BK4819_REG_7E) & 0xFFC0));
+    // Disable FM sub-audio filters & emphasis
+    BK4819_WriteRegister(BK4819_REG_2B, (BK4819_ReadRegister(BK4819_REG_2B) & 0xF8F8) | 0x707);
+
     // Disable ALC
     // FIXME: BK4819_SetRegValue(alcDisableRegSpec, 1);
     BK4819_WriteRegister(BK4819_REG_4B, 0x0010);
+
+    uint16_t r43val = (4u << 12) |     // RF RX filter bandwidth (7.5kHz)
+                      (3u <<  9) |     // Weak RX signal bandwidth (6kHz)
+                      (6u <<  6) |     // Tx AF Filter bandwidth (4.5kHz, bypassed)
+                      (2u <<  4) |     // 25kHz channel bandwidth
+                      (1u <<  3) |     // ?
+                      (0u <<  2);      // 0 Gain after FM Demodulation
+    BK4819_WriteRegister(BK4819_REG_43, r43val);
 
     for (unsigned int i = 0; i < ARRAY_SIZE(POCSAG_Configuration); i++) {
         BK4819_WriteRegister(POCSAG_Configuration[i].reg, POCSAG_Configuration[i].value);
