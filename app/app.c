@@ -18,36 +18,21 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "am_fix.h"
 #include "app/action.h"
 
-#ifdef ENABLE_AIRCOPY
-	#include "app/aircopy.h"
-#endif
 #include "app/app.h"
 #include "app/chFrScanner.h"
 #include "app/dtmf.h"
-#ifdef ENABLE_FLASHLIGHT
-	#include "app/flashlight.h"
-#endif
-#ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
-#endif
 #include "app/generic.h"
 #include "app/main.h"
 #include "app/menu.h"
 #include "app/scanner.h"
-#ifdef ENABLE_UART
-	#include "app/uart.h"
-#endif
+#include "app/uart.h"
 #include "ARMCM0.h"
 #include "audio.h"
 #include "board.h"
 #include "bsp/dp32g030/gpio.h"
 #include "driver/backlight.h"
-#ifdef ENABLE_FMRADIO
-	#include "driver/bk1080.h"
-#endif
 #include "driver/bk4819.h"
 #include "driver/gpio.h"
 #include "driver/keyboard.h"
@@ -173,10 +158,6 @@ static void CheckForIncoming(void)
 static void HandleIncoming(void)
 {
 	if (!g_SquelchLost) {	// squelch is closed
-#ifdef ENABLE_DTMF_CALLING
-		if (gDTMF_RX_index > 0)
-			DTMF_clear_RX();
-#endif
 		if (gCurrentFunction != FUNCTION_FOREGROUND) {
 			FUNCTION_Select(FUNCTION_FOREGROUND);
 			gUpdateDisplay = true;
@@ -185,13 +166,6 @@ static void HandleIncoming(void)
 	}
 
 	bool bFlag = (gScanStateDir == SCAN_OFF && gCurrentCodeType == CODE_TYPE_OFF);
-
-#ifdef ENABLE_NOAA
-	if (IS_NOAA_CHANNEL(gRxVfo->CHANNEL_SAVE) && gNOAACountdown_10ms > 0) {
-		gNOAACountdown_10ms = 0;
-		bFlag               = true;
-	}
-#endif
 
 	if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE) {
 		bFlag       = true;
@@ -205,30 +179,6 @@ static void HandleIncoming(void)
 	}
 	else if (!bFlag)
 		return;
-
-#ifdef ENABLE_DTMF_CALLING
-	if (gScanStateDir == SCAN_OFF && (gRxVfo->DTMF_DECODING_ENABLE || gSetting_KILLED)) {
-
-		// DTMF DCD is enabled
-		DTMF_HandleRequest();
-		if (gDTMF_CallState == DTMF_CALL_STATE_NONE) {
-			if (gRxReceptionMode != RX_MODE_DETECTED) {
-				return;
-			}
-			gDualWatchCountdown_10ms = dual_watch_count_after_1_10ms;
-			gScheduleDualWatch       = false;
-
-			gRxReceptionMode = RX_MODE_LISTENING;
-
-			// let the user see DW is not active
-			gDualWatchActive = false;
-			gUpdateStatus    = true;
-
-			gUpdateDisplay = true;
-			return;
-		}
-	}
-#endif
 
 	APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
 }

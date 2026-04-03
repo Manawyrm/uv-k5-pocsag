@@ -17,11 +17,7 @@
 #include "driver/bk4819-regs.h"
 #include <string.h>
 
-#include "am_fix.h"
 #include "app/dtmf.h"
-#ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
-#endif
 #include "audio.h"
 #include "bsp/dp32g030/gpio.h"
 #include "dcs.h"
@@ -47,11 +43,6 @@ const char gModulationStr[MODULATION_UKNOWN][4] = {
 	[MODULATION_FM]="FM",
 	[MODULATION_AM]="AM",
 	[MODULATION_USB]="USB",
-
-#ifdef ENABLE_BYP_RAW_DEMODULATORS
-	[MODULATION_BYP]="BYP",
-	[MODULATION_RAW]="RAW"
-#endif
 };
 
 
@@ -137,20 +128,6 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
 	uint8_t channel = gEeprom.ScreenChannel[VFO];
 
 	if (IS_VALID_CHANNEL(channel)) {
-#ifdef ENABLE_NOAA
-		if (IS_NOAA_CHANNEL(channel))
-		{
-			RADIO_InitInfo(pVfo, gEeprom.ScreenChannel[VFO], NoaaFrequencyTable[channel - NOAA_CHANNEL_FIRST]);
-
-			if (gEeprom.CROSS_BAND_RX_TX == CROSS_BAND_OFF)
-				return;
-
-			gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
-
-			gUpdateStatus = true;
-			return;
-		}
-#endif
 
 		if (IS_MR_CHANNEL(channel)) {
 			channel = RADIO_FindNextChannel(channel, RADIO_CHANNEL_UP, false, VFO);
