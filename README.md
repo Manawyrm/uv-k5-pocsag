@@ -17,6 +17,8 @@ This repository is based on [DualTachyon/uv-k5-firmware](https://github.com/Dual
 * USB-serial (UART) communication-only
 * No analog audio / modulation anywhere in the process
 
+FIXME: ENABLE_REDUCE_LOW_MID_TX_POWER
+
 ## Compilation
 ```bash
 sudo apt install git build-essential gcc-arm-none-eabi libnewlib-arm-none-eabi python3-crcmod

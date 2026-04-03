@@ -504,34 +504,6 @@ static void CheckRadioInterrupts(void)
 		if (interrupts.ctcssFound)
 			g_CTCSS_Lost = false;
 
-#ifdef ENABLE_VOX
-		if (interrupts.voxLost) {
-			g_VOX_Lost         = true;
-			gVoxPauseCountdown = 10;
-
-			if (gEeprom.VOX_SWITCH) {
-				if (gCurrentFunction == FUNCTION_POWER_SAVE && !gRxIdleMode) {
-					gPowerSave_10ms            = power_save2_10ms;
-					gPowerSaveCountdownExpired = 0;
-				}
-
-				if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF && (gScheduleDualWatch || gDualWatchCountdown_10ms < dual_watch_count_after_vox_10ms)) {
-					gDualWatchCountdown_10ms = dual_watch_count_after_vox_10ms;
-					gScheduleDualWatch = false;
-
-					// let the user see DW is not active
-					gDualWatchActive = false;
-					gUpdateStatus    = true;
-				}
-			}
-		}
-
-		if (interrupts.voxFound) {
-			g_VOX_Lost         = false;
-			gVoxPauseCountdown = 0;
-		}
-#endif
-
 		if (interrupts.sqlLost) {
 			g_SquelchLost = true;
 			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
@@ -541,20 +513,6 @@ static void CheckRadioInterrupts(void)
 			g_SquelchLost = false;
 			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
 		}
-
-#ifdef ENABLE_AIRCOPY
-		if (interrupts.fskFifoAlmostFull &&
-			gScreenToDisplay == DISPLAY_AIRCOPY &&
-			gAircopyState == AIRCOPY_TRANSFER &&
-			gAirCopyIsSendMode == 0)
-		{
-			for (unsigned int i = 0; i < 4; i++) {
-				g_FSK_Buffer[gFSKWriteIndex++] = BK4819_ReadRegister(BK4819_REG_5F);
-			}
-
-			AIRCOPY_StorePacket();
-		}
-#endif
 	}
 }
 
@@ -571,89 +529,8 @@ void APP_EndTransmission(void)
 	}
 }
 
-#ifdef ENABLE_VOX
-static void HandleVox(void)
-{
-#ifdef ENABLE_DTMF_CALLING
-	if (gSetting_KILLED)
-		return;
-#endif
-
-	if (gVoxResumeCountdown == 0) {
-		if (gVoxPauseCountdown)
-			return;
-	}
-	else {
-		g_VOX_Lost         = false;
-		gVoxPauseCountdown = 0;
-	}
-
-#ifdef ENABLE_FMRADIO
-	if (gFmRadioMode)
-		return;
-#endif
-
-	if (gCurrentFunction == FUNCTION_RECEIVE || gCurrentFunction == FUNCTION_MONITOR)
-		return;
-
-	if (gScanStateDir != SCAN_OFF)
-		return;
-
-	if (gVOX_NoiseDetected) {
-		if (g_VOX_Lost)
-			gVoxStopCountdown_10ms = vox_stop_count_down_10ms;
-		else if (gVoxStopCountdown_10ms == 0)
-			gVOX_NoiseDetected = false;
-
-		if (gCurrentFunction == FUNCTION_TRANSMIT && !gPttIsPressed && !gVOX_NoiseDetected) {
-			if (gFlagEndTransmission) {
-				//if (gCurrentFunction != FUNCTION_FOREGROUND)
-					FUNCTION_Select(FUNCTION_FOREGROUND);
-			}
-			else {
-				APP_EndTransmission();
-
-				if (gEeprom.REPEATER_TAIL_TONE_ELIMINATION == 0) {
-					//if (gCurrentFunction != FUNCTION_FOREGROUND)
-						FUNCTION_Select(FUNCTION_FOREGROUND);
-				}
-				else
-					gRTTECountdown_10ms = gEeprom.REPEATER_TAIL_TONE_ELIMINATION * 10;
-			}
-
-			gUpdateStatus        = true;
-			gUpdateDisplay       = true;
-			gFlagEndTransmission = false;
-		}
-		return;
-	}
-
-	if (g_VOX_Lost) {
-		gVOX_NoiseDetected = true;
-
-		if (gCurrentFunction == FUNCTION_POWER_SAVE)
-			FUNCTION_Select(FUNCTION_FOREGROUND);
-
-		if (gCurrentFunction != FUNCTION_TRANSMIT && !SerialConfigInProgress()) {
-#ifdef ENABLE_DTMF_CALLING
-			gDTMF_ReplyState = DTMF_REPLY_NONE;
-#endif
-			RADIO_PrepareTX();
-			gUpdateDisplay = true;
-		}
-	}
-}
-#endif
-
 void APP_Update(void)
 {
-#ifdef ENABLE_VOICE
-	if (gFlagPlayQueuedVoice) {
-			AUDIO_PlayQueuedVoice();
-			gFlagPlayQueuedVoice = false;
-	}
-#endif
-
 	if (gCurrentFunction == FUNCTION_TRANSMIT && (gTxTimeoutReached || SerialConfigInProgress()))
 	{	// transmitter timed out or must de-key
 		gTxTimeoutReached = false;
@@ -673,35 +550,10 @@ void APP_Update(void)
 	if (gCurrentFunction != FUNCTION_TRANSMIT)
 		HandleFunction();
 
-#ifdef ENABLE_FMRADIO
-//	if (gFmRadioCountdown_500ms > 0)
-	if (gFmRadioMode && gFmRadioCountdown_500ms > 0)    // 1of11
-		return;
-#endif
-
-#ifdef ENABLE_VOICE
-	if (!SCANNER_IsScanning() && gScanStateDir != SCAN_OFF && gScheduleScanListen && !gPttIsPressed && gVoiceWriteIndex == 0)
-#else
 	if (!SCANNER_IsScanning() && gScanStateDir != SCAN_OFF && gScheduleScanListen && !gPttIsPressed)
-#endif
 	{	// scanning
 		CHFRSCANNER_ContinueScanning();
 	}
-
-#ifdef ENABLE_NOAA
-#ifdef ENABLE_VOICE
-		if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF && gIsNoaaMode && gScheduleNOAA && gVoiceWriteIndex == 0)
-#else
-		if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF && gIsNoaaMode && gScheduleNOAA)
-#endif
-		{
-			NOAA_IncreaseChannel();
-			RADIO_SetupRegisters(false);
-
-			gNOAA_Countdown_10ms = 7;      // 70ms
-			gScheduleNOAA        = false;
-		}
-#endif
 
 	// toggle between the VFO's if dual watch is enabled
 	if (!SCANNER_IsScanning()
@@ -710,15 +562,6 @@ void APP_Update(void)
 		&& gScanStateDir == SCAN_OFF
 		&& !gPttIsPressed
 		&& gCurrentFunction != FUNCTION_POWER_SAVE
-#ifdef ENABLE_VOICE
-		&& gVoiceWriteIndex == 0
-#endif
-#ifdef ENABLE_FMRADIO
-		&& !gFmRadioMode
-#endif
-#ifdef ENABLE_DTMF_CALLING
-		&& gDTMF_CallState == DTMF_CALL_STATE_NONE
-#endif
 	) {
 		DualwatchAlternate();    // toggle between the two VFO's
 
@@ -732,19 +575,6 @@ void APP_Update(void)
 		gScheduleDualWatch = false;
 	}
 
-#ifdef ENABLE_FMRADIO
-	if (gScheduleFM && gFM_ScanState != FM_SCAN_OFF && !FUNCTION_IsRx()) {
-		// switch to FM radio mode
-		FM_Play();
-		gScheduleFM = false;
-	}
-#endif
-
-#ifdef ENABLE_VOX
-	if (gEeprom.VOX_SWITCH)
-		HandleVox();
-#endif
-
 	if (gSchedulePowerSave) {
 		if (gPttIsPressed
 			|| gKeyBeingHeld
@@ -752,15 +582,6 @@ void APP_Update(void)
 			|| gScanStateDir != SCAN_OFF
 			|| gCssBackgroundScan
 			|| gScreenToDisplay != DISPLAY_MAIN
-#ifdef ENABLE_FMRADIO
-			|| gFmRadioMode
-#endif
-#ifdef ENABLE_DTMF_CALLING
-			|| gDTMF_CallState != DTMF_CALL_STATE_NONE
-#endif
-#ifdef ENABLE_NOAA
-			|| (gIsNoaaMode && (IS_NOAA_CHANNEL(gEeprom.ScreenChannel[0]) || IS_NOAA_CHANNEL(gEeprom.ScreenChannel[1])))
-#endif
 		) {
 			gBatterySaveCountdown_10ms = battery_save_count_10ms;
 		} else {
@@ -771,20 +592,12 @@ void APP_Update(void)
 	}
 
 	if (gPowerSaveCountdownExpired && gCurrentFunction == FUNCTION_POWER_SAVE
-#ifdef ENABLE_VOICE
-		&& gVoiceWriteIndex == 0
-#endif
 	) {
 		static bool goToSleep;
 		// wake up, enable RX then go back to sleep
 		if (gRxIdleMode)
 		{
 			BK4819_Conditional_RX_TurnOn_and_GPIO6_Enable();
-
-#ifdef ENABLE_VOX
-			if (gEeprom.VOX_SWITCH)
-				BK4819_EnableVox(gEeprom.VOX1_THRESHOLD, gEeprom.VOX0_THRESHOLD);
-#endif
 
 			if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF &&
 			    gScanStateDir == SCAN_OFF &&
@@ -828,18 +641,6 @@ void APP_Update(void)
 // called every 10ms
 static void CheckKeys(void)
 {
-#ifdef ENABLE_DTMF_CALLING
-	if(gSetting_KILLED){
-		return;
-	}
-#endif
-
-#ifdef ENABLE_AIRCOPY
-	if (gScreenToDisplay == DISPLAY_AIRCOPY && gAircopyState != AIRCOPY_READY){
-		return;
-	}
-#endif
-
 // -------------------- PTT ------------------------
 	if (gPttIsPressed)
 	{

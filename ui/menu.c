@@ -278,34 +278,13 @@ const char gSubMenu_SCRAMBLER[][7] =
 const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
 {
 	{"NONE",			ACTION_OPT_NONE},
-#ifdef ENABLE_FLASHLIGHT
-	{"FLASH\nLIGHT",	ACTION_OPT_FLASHLIGHT},
-#endif
 	{"POWER",			ACTION_OPT_POWER},
 	{"MONITOR",			ACTION_OPT_MONITOR},
 	{"SCAN",			ACTION_OPT_SCAN},
-#ifdef ENABLE_VOX
-	{"VOX",				ACTION_OPT_VOX},
-#endif
-#ifdef ENABLE_ALARM
-	{"ALARM",			ACTION_OPT_ALARM},
-#endif
-#ifdef ENABLE_FMRADIO
-	{"FM RADIO",		ACTION_OPT_FM},
-#endif
-#ifdef ENABLE_TX1750
-	{"1750HZ",			ACTION_OPT_1750},
-#endif
 	{"LOCK\nKEYPAD",	ACTION_OPT_KEYLOCK},
 	{"SWITCH\nVFO",		ACTION_OPT_A_B},
 	{"VFO/MR",			ACTION_OPT_VFO_MR},
 	{"SWITCH\nDEMODUL",	ACTION_OPT_SWITCH_DEMODUL},
-#ifdef ENABLE_BLMIN_TMP_OFF
-	{"BLMIN\nTMP OFF",  ACTION_OPT_BLMIN_TMP_OFF}, 		//BackLight Minimum Temporay OFF
-#endif
-#ifdef ENABLE_SPECTRUM
-	{"SPECTRUM",         ACTION_OPT_SPECTRUM}
-#endif
 };
 
 const uint8_t gSubMenu_SIDEFUNCTIONS_size = ARRAY_SIZE(gSubMenu_SIDEFUNCTIONS);
@@ -341,15 +320,9 @@ void UI_DisplayMenu(void)
 	const unsigned int menu_item_x2    = LCD_WIDTH - 1;
 	unsigned int       i;
 	char               String[64];  // bigger cuz we can now do multi-line in one string (use '\n' char)
-
-#ifdef ENABLE_DTMF_CALLING
-	char               Contact[16];
-#endif
-
 	UI_DisplayClear();
 
-#ifndef ENABLE_CUSTOM_MENU_LAYOUT
-		// original menu layout
+	// original menu layout
 	for (i = 0; i < 3; i++)
 		if (gMenuCursor > 0 || i > 0)
 			if ((gMenuListCount - 1) != gMenuCursor || i != 2)
@@ -374,50 +347,6 @@ void UI_DisplayMenu(void)
 	sprintf(String, "%2u.%u", 1 + gMenuCursor, gMenuListCount);
 
 	UI_PrintStringSmallNormal(String, 2, 0, 6);
-
-#else
-	{	// new menu layout .. experimental & unfinished
-		const int menu_index = gMenuCursor;  // current selected menu item
-		i = 1;
-
-		if (!gIsInSubMenu) {
-			while (i < 2)
-			{	// leading menu items - small text
-				const int k = menu_index + i - 2;
-				if (k < 0)
-					UI_PrintStringSmallNormal(MenuList[gMenuListCount + k].name, 0, 0, i);  // wrap-a-round
-				else if (k >= 0 && k < (int)gMenuListCount)
-					UI_PrintStringSmallNormal(MenuList[k].name, 0, 0, i);
-				i++;
-			}
-
-			// current menu item - keep big n fat
-			if (menu_index >= 0 && menu_index < (int)gMenuListCount)
-				UI_PrintString(MenuList[menu_index].name, 0, 0, 2, 8);
-			i++;
-
-			while (i < 4)
-			{	// trailing menu item - small text
-				const int k = menu_index + i - 2;
-				if (k >= 0 && k < (int)gMenuListCount)
-					UI_PrintStringSmallNormal(MenuList[k].name, 0, 0, 1 + i);
-				else if (k >= (int)gMenuListCount)
-					UI_PrintStringSmallNormal(MenuList[gMenuListCount - k].name, 0, 0, 1 + i);  // wrap-a-round
-				i++;
-			}
-
-			// draw the menu index number/count
-			sprintf(String, "%2u.%u", 1 + gMenuCursor, gMenuListCount);
-			UI_PrintStringSmallNormal(String, 2, 0, 6);
-		}
-		else if (menu_index >= 0 && menu_index < (int)gMenuListCount)
-		{	// current menu item
-//			strcat(String, ":");
-			UI_PrintString(MenuList[menu_index].name, 0, 0, 0, 8);
-//			UI_PrintStringSmallNormal(String, 0, 0, 0);
-		}
-	}
-#endif
 
 	// **************
 
@@ -516,15 +445,6 @@ void UI_DisplayMenu(void)
 			#endif
 			break;
 
-		#ifdef ENABLE_VOX
-			case MENU_VOX:
-				if (gSubMenuSelection == 0)
-					strcpy(String, "OFF");
-				else
-					sprintf(String, "%d", gSubMenuSelection);
-				break;
-		#endif
-
 		case MENU_ABR:
 			strcpy(String, gSubMenu_BACKLIGHT[gSubMenuSelection]);
 			if(BACKLIGHT_GetBrightness() < 4)
@@ -553,22 +473,13 @@ void UI_DisplayMenu(void)
 			strcpy(String, gSubMenu_RX_TX[gSubMenuSelection]);
 			break;
 
-		#ifdef ENABLE_AM_FIX
-			case MENU_AM_FIX:
-		#endif
 		case MENU_BCL:
 		case MENU_BEEP:
 		case MENU_S_ADD1:
 		case MENU_S_ADD2:
 		case MENU_STE:
 		case MENU_D_ST:
-#ifdef ENABLE_DTMF_CALLING
-		case MENU_D_DCD:
-#endif
 		case MENU_D_LIVE_DEC:
-		#ifdef ENABLE_NOAA
-			case MENU_NOAA_S:
-		#endif
 		case MENU_350TX:
 		case MENU_200TX:
 		case MENU_500TX:
@@ -646,11 +557,6 @@ void UI_DisplayMenu(void)
 			strcpy(String, gSubMenu_TOT[gSubMenuSelection]);
 			break;
 
-		#ifdef ENABLE_VOICE
-			case MENU_VOICE:
-				strcpy(String, gSubMenu_VOICE[gSubMenuSelection]);
-				break;
-		#endif
 
 		case MENU_SC_REV:
 			strcpy(String, gSubMenu_SC_REV[gSubMenuSelection]);

@@ -278,16 +278,10 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
 
 		if (data[5] == 0xFF)
 		{
-#ifdef ENABLE_DTMF_CALLING
-			pVfo->DTMF_DECODING_ENABLE = false;
-#endif
 			pVfo->DTMF_PTT_ID_TX_MODE  = PTT_ID_OFF;
 		}
 		else
 		{
-#ifdef ENABLE_DTMF_CALLING
-			pVfo->DTMF_DECODING_ENABLE = ((data[5] >> 0) & 1u) ? true : false;
-#endif
 			uint8_t pttId = ((data[5] >> 1) & 7u);
 			pVfo->DTMF_PTT_ID_TX_MODE  = pttId < ARRAY_SIZE(gSubMenu_PTT_ID) ? pttId : PTT_ID_OFF;
 		}
