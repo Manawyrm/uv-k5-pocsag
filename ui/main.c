@@ -19,9 +19,6 @@
 
 #include "app/chFrScanner.h"
 #include "app/dtmf.h"
-#ifdef ENABLE_AM_FIX
-	#include "am_fix.h"
-#endif
 #include "bitmaps.h"
 #include "board.h"
 #include "driver/bk4819.h"
