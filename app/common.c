@@ -7,7 +7,6 @@
 
 void COMMON_KeypadLockToggle() 
 {
-
     if (gScreenToDisplay != DISPLAY_MENU &&
         gCurrentFunction != FUNCTION_TRANSMIT)
     {	// toggle the keyboad lock

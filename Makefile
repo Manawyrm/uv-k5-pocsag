@@ -59,6 +59,7 @@ OBJS += app/dtmf.o
 OBJS += app/generic.o
 OBJS += app/main.o
 OBJS += app/menu.o
+OBJS += app/pocsag.o
 OBJS += app/scanner.o
 OBJS += app/uart.o
 OBJS += audio.o
