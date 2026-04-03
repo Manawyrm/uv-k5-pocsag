@@ -422,17 +422,6 @@ void MENU_AcceptSetting(void)
 			gEeprom.BATTERY_SAVE = gSubMenuSelection;
 			break;
 
-		#ifdef ENABLE_VOX
-			case MENU_VOX:
-				gEeprom.VOX_SWITCH = gSubMenuSelection != 0;
-				if (gEeprom.VOX_SWITCH)
-					gEeprom.VOX_LEVEL = gSubMenuSelection - 1;
-				SETTINGS_LoadCalibration();
-				gFlagReconfigureVfos = true;
-				gUpdateStatus        = true;
-				break;
-		#endif
-
 		case MENU_ABR:
 			gEeprom.BACKLIGHT_TIME = gSubMenuSelection;
 			break;

@@ -19,10 +19,6 @@
 
 #include "driver/keyboard.h"
 
-#ifdef ENABLE_F_CAL_MENU
-	void writeXtalFreqCal(const int32_t value, const bool update_eeprom);
-#endif
-
 extern uint8_t gUnlockAllTxConfCnt;
 
 int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax);

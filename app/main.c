@@ -212,9 +212,6 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 		if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) { // user is entering channel number
 
 			if (gInputBoxIndex != 3) {
-				#ifdef ENABLE_VOICE
-					gAnotherVoiceID   = (VOICE_ID_t)Key;
-				#endif
 				gRequestDisplayScreen = DISPLAY_MAIN;
 				return;
 			}
@@ -228,10 +225,6 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 				return;
 			}
 
-			#ifdef ENABLE_VOICE
-				gAnotherVoiceID        = (VOICE_ID_t)Key;
-			#endif
-
 			gEeprom.MrChannel[Vfo]     = (uint8_t)Channel;
 			gEeprom.ScreenChannel[Vfo] = (uint8_t)Channel;
 			gRequestSaveVFO            = true;
@@ -240,9 +233,6 @@ static void MAIN_Key_DIGITS(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 			return;
 		}
 
-//		#ifdef ENABLE_NOAA
-//			if (!IS_NOAA_CHANNEL(gTxVfo->CHANNEL_SAVE))
-//		#endif
 		if (IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE))
 		{	// user is entering a frequency
 

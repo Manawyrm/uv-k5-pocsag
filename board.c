@@ -16,9 +16,6 @@
 
 #include <string.h>
 
-#ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
-#endif
 #include "board.h"
 #include "bsp/dp32g030/gpio.h"
 #include "bsp/dp32g030/portcon.h"
@@ -26,10 +23,6 @@
 #include "bsp/dp32g030/syscon.h"
 #include "driver/adc.h"
 #include "driver/backlight.h"
-#ifdef ENABLE_FMRADIO
-	#include "driver/bk1080.h"
-#endif
-
 #include "driver/crc.h"
 #include "driver/eeprom.h"
 #include "driver/flash.h"
@@ -107,10 +100,6 @@ void BOARD_GPIO_Init(void)
 		// PTT button
 		| GPIO_DIR_5_MASK // INPUT
 		);
-
-	#if defined(ENABLE_FMRADIO)
-		GPIO_SetBit(&GPIOB->DATA, GPIOB_PIN_BK1080);
-	#endif
 }
 
 void BOARD_PORTCON_Init(void)
@@ -494,12 +483,5 @@ void BOARD_Init(void)
 	BACKLIGHT_InitHardware();
 	BOARD_ADC_Init();
 	ST7565_Init();
-#ifdef ENABLE_FMRADIO
-	BK1080_Init0();
-#endif
-
-#if defined(ENABLE_UART) || defined(ENABLED_AIRCOPY)
 	CRC_Init();
-#endif
-
 }

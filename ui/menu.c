@@ -63,9 +63,6 @@ const t_menu_item MenuList[] =
 	{"SList1", VOICE_ID_INVALID,                       MENU_SLIST1        },
 	{"SList2", VOICE_ID_INVALID,                       MENU_SLIST2        },
 	{"ScnRev", VOICE_ID_INVALID,                       MENU_SC_REV        },
-#ifdef ENABLE_NOAA
-	{"NOAA-S", VOICE_ID_INVALID,                       MENU_NOAA_S        },
-#endif
 	{"F1Shrt",    VOICE_ID_INVALID,                    MENU_F1SHRT        },
 	{"F1Long",    VOICE_ID_INVALID,                    MENU_F1LONG        },
 	{"F2Shrt",    VOICE_ID_INVALID,                    MENU_F2SHRT        },
@@ -76,9 +73,6 @@ const t_menu_item MenuList[] =
 	{"TxTOut", VOICE_ID_TRANSMIT_OVER_TIME,            MENU_TOT           }, // was "TOT"
 	{"BatSav", VOICE_ID_SAVE_MODE,                     MENU_SAVE          }, // was "SAVE"
 	{"Mic",    VOICE_ID_INVALID,                       MENU_MIC           },
-#ifdef ENABLE_AUDIO_BAR
-	{"MicBar", VOICE_ID_INVALID,                       MENU_MIC_BAR       },
-#endif
 	{"ChDisp", VOICE_ID_INVALID,                       MENU_MDF           }, // was "MDF"
 	{"POnMsg", VOICE_ID_INVALID,                       MENU_PONMSG        },
 	{"BatTxt", VOICE_ID_INVALID,                       MENU_BAT_TXT       },
@@ -87,39 +81,16 @@ const t_menu_item MenuList[] =
 	{"BLMax",  VOICE_ID_INVALID,                       MENU_ABR_MAX       },
 	{"BltTRX", VOICE_ID_INVALID,                       MENU_ABR_ON_TX_RX  },
 	{"Beep",   VOICE_ID_BEEP_PROMPT,                   MENU_BEEP          },
-#ifdef ENABLE_VOICE
-	{"Voice",  VOICE_ID_VOICE_PROMPT,                  MENU_VOICE         },
-#endif
 	{"Roger",  VOICE_ID_INVALID,                       MENU_ROGER         },
 	{"STE",    VOICE_ID_INVALID,                       MENU_STE           },
 	{"RP STE", VOICE_ID_INVALID,                       MENU_RP_STE        },
 	{"1 Call", VOICE_ID_INVALID,                       MENU_1_CALL        },
-#ifdef ENABLE_ALARM
-	{"AlarmT", VOICE_ID_INVALID,                       MENU_AL_MOD        },
-#endif
-#ifdef ENABLE_DTMF_CALLING
-	{"ANI ID", VOICE_ID_ANI_CODE,                      MENU_ANI_ID        },
-#endif
 	{"UPCode", VOICE_ID_INVALID,                       MENU_UPCODE        },
 	{"DWCode", VOICE_ID_INVALID,                       MENU_DWCODE        },
 	{"PTT ID", VOICE_ID_INVALID,                       MENU_PTT_ID        },
 	{"D ST",   VOICE_ID_INVALID,                       MENU_D_ST          },
-#ifdef ENABLE_DTMF_CALLING
-    {"D Resp", VOICE_ID_INVALID,                       MENU_D_RSP         },
-	{"D Hold", VOICE_ID_INVALID,                       MENU_D_HOLD        },
-#endif
 	{"D Prel", VOICE_ID_INVALID,                       MENU_D_PRE         },
-#ifdef ENABLE_DTMF_CALLING
-	{"D Decd", VOICE_ID_INVALID,                       MENU_D_DCD         },
-	{"D List", VOICE_ID_INVALID,                       MENU_D_LIST        },
-#endif
 	{"D Live", VOICE_ID_INVALID,                       MENU_D_LIVE_DEC    }, // live DTMF decoder
-#ifdef ENABLE_AM_FIX
-	{"AM Fix", VOICE_ID_INVALID,                       MENU_AM_FIX        },
-#endif
-#ifdef ENABLE_VOX
-	{"VOX",    VOICE_ID_VOX,                           MENU_VOX           },
-#endif
 	{"BatVol", VOICE_ID_INVALID,                       MENU_VOL           }, // was "VOL"
 	{"RxMode", VOICE_ID_DUAL_STANDBY,                  MENU_TDR           },
 	{"Sql",    VOICE_ID_SQUELCH,                       MENU_SQL           },
@@ -132,9 +103,6 @@ const t_menu_item MenuList[] =
 	{"Tx 500", VOICE_ID_INVALID,                       MENU_500TX         }, // was "500TX"
 	{"350 En", VOICE_ID_INVALID,                       MENU_350EN         }, // was "350EN"
 	{"ScraEn", VOICE_ID_INVALID,                       MENU_SCREN         }, // was "SCREN"
-#ifdef ENABLE_F_CAL_MENU
-	{"FrCali", VOICE_ID_INVALID,                       MENU_F_CALI        }, // reference xtal calibration
-#endif
 	{"BatCal", VOICE_ID_INVALID,                       MENU_BATCAL        }, // battery voltage calibration
 	{"BatTyp", VOICE_ID_INVALID,                       MENU_BATTYP        }, // battery type 1600/2200mAh
 	{"Reset",  VOICE_ID_INITIALISATION,                MENU_RESET         }, // might be better to move this to the hidden menu items ?
@@ -202,15 +170,6 @@ const char* const gSubMenu_RXMode[] =
 	"MAIN TX\nDUAL RX" 	// always TX on main, but RX on both
 };
 
-#ifdef ENABLE_VOICE
-	const char gSubMenu_VOICE[][4] =
-	{
-		"OFF",
-		"CHI",
-		"ENG"
-	};
-#endif
-
 const char gSubMenu_SC_REV[][8] =
 {
 	"TIMEOUT",
@@ -225,24 +184,6 @@ const char* const gSubMenu_MDF[] =
 	"NAME",
 	"NAME\n+\nFREQ"
 };
-
-#ifdef ENABLE_ALARM
-	const char gSubMenu_AL_MOD[][5] =
-	{
-		"SITE",
-		"TONE"
-	};
-#endif
-
-#ifdef ENABLE_DTMF_CALLING
-const char gSubMenu_D_RSP[][11] =
-{
-	"DO\nNOTHING",
-	"RING",
-	"REPLY",
-	"BOTH"
-};
-#endif
 
 const char* const gSubMenu_PTT_ID[] =
 {
