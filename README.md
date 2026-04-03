@@ -4,7 +4,7 @@ This repository is a heavily modified version of the open-source firmware for th
 
 > [!WARNING]  
 > This special firmware should __NOT__ be flashed onto handheld radios for normal use.  
-> It might brick you radio, provides no user interface, no RX capability!
+> It might brick your radio, provides no user interface, no RX capability!
 
 This repository is based on [DualTachyon/uv-k5-firmware](https://github.com/DualTachyon/uv-k5-firmware) / [OneOfEleven/uv-k5-firmware-custom](https://github.com/OneOfEleven/uv-k5-firmware-custom)
 

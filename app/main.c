@@ -20,17 +20,9 @@
 #include "app/app.h"
 #include "app/chFrScanner.h"
 #include "app/common.h"
-#ifdef ENABLE_FMRADIO
-	#include "app/fm.h"
-#endif
 #include "app/generic.h"
 #include "app/main.h"
 #include "app/scanner.h"
-
-#ifdef ENABLE_SPECTRUM
-#include "app/spectrum.h"
-#endif
-
 #include "audio.h"
 #include "board.h"
 #include "driver/bk4819.h"
@@ -50,12 +42,6 @@ void toggle_chan_scanlist(void)
 		return;
 
 	if(!IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE)) {
-#ifdef ENABLE_SCAN_RANGES
-		gScanRangeStart = gScanRangeStart ? 0 : gTxVfo->pRX->Frequency;
-		gScanRangeStop = gEeprom.VfoInfo[!gEeprom.TX_VFO].freq_config_RX.Frequency;
-		if(gScanRangeStart > gScanRangeStop)
-			SWAP(gScanRangeStart, gScanRangeStop);
-#endif
 		return;
 	}
 	
@@ -84,9 +70,6 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 
 	switch (Key) {
 		case KEY_0:
-			#ifdef ENABLE_FMRADIO
-				ACTION_FM();
-			#endif
 			break;
 
 		case KEY_1:
@@ -95,48 +78,9 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 				gUpdateStatus   = true;
 				gBeepToPlay     = BEEP_1KHZ_60MS_OPTIONAL;
 
-#ifdef ENABLE_COPY_CHAN_TO_VFO
-				if (!gEeprom.VFO_OPEN || gCssBackgroundScan) {
-					gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
-					return;
-				}
-
-				if (gScanStateDir != SCAN_OFF) {
-					if (gCurrentFunction != FUNCTION_INCOMING ||
-						gRxReceptionMode == RX_MODE_NONE      ||
-						gScanPauseDelayIn_10ms == 0)
-					{	// scan is running (not paused)
-						return;
-					}
-				}
-
-				const uint8_t vfo = gEeprom.TX_VFO;
-
-				if (IS_MR_CHANNEL(gEeprom.ScreenChannel[vfo]))
-				{	// copy channel to VFO, then swap to the VFO
-
-					gEeprom.ScreenChannel[vfo] = FREQ_CHANNEL_FIRST + gEeprom.VfoInfo[vfo].Band;
-					gEeprom.VfoInfo[vfo].CHANNEL_SAVE = gEeprom.ScreenChannel[vfo];
-
-					RADIO_SelectVfos();
-					RADIO_ApplyOffset(gRxVfo);
-					RADIO_ConfigureSquelchAndOutputPower(gRxVfo);
-					RADIO_SetupRegisters(true);
-
-					//SETTINGS_SaveChannel(channel, gEeprom.RX_VFO, gRxVfo, 1);
-
-					gUpdateDisplay = true;
-				}
-#endif
 				return;
 			}
 
-#ifdef ENABLE_WIDE_RX
-			if(gTxVfo->Band == BAND7_470MHz && gTxVfo->pRX->Frequency < _1GHz_in_KHz) {
-					gTxVfo->pRX->Frequency = _1GHz_in_KHz;
-					return;
-			}
-#endif
 			gTxVfo->Band += 1;
 
 			if (gTxVfo->Band == BAND5_350MHz && !gSetting_350EN) {
@@ -190,27 +134,10 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 
 		case KEY_5:
 			if(beep) {
-#ifdef ENABLE_NOAA
-				if (!IS_NOAA_CHANNEL(gTxVfo->CHANNEL_SAVE)) {
-					gEeprom.ScreenChannel[Vfo] = gEeprom.NoaaChannel[gEeprom.TX_VFO];
-				}
-				else {
-					gEeprom.ScreenChannel[Vfo] = gEeprom.FreqChannel[gEeprom.TX_VFO];
-#ifdef ENABLE_VOICE
-						gAnotherVoiceID = VOICE_ID_FREQUENCY_MODE;
-#endif
-				}
-				gRequestSaveVFO   = true;
-				gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
-#elif defined(ENABLE_SPECTRUM)
-				APP_RunSpectrum();
-				gRequestDisplayScreen = DISPLAY_MAIN;
-#endif
+
 			}
 			else {
-#ifdef ENABLE_VOX
-				toggle_chan_scanlist();
-#endif
+
 			}
 
 			break;
@@ -220,11 +147,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 			break;
 
 		case KEY_7:
-#ifdef ENABLE_VOX
-			ACTION_Vox();
-#else
 			toggle_chan_scanlist();
-#endif
 			break;
 
 		case KEY_8:
@@ -236,11 +159,6 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 			if (RADIO_CheckValidChannel(gEeprom.CHAN_1_CALL, false, 0)) {
 				gEeprom.MrChannel[Vfo]     = gEeprom.CHAN_1_CALL;
 				gEeprom.ScreenChannel[Vfo] = gEeprom.CHAN_1_CALL;
-#ifdef ENABLE_VOICE
-				AUDIO_SetVoiceID(0, VOICE_ID_CHANNEL_MODE);
-				AUDIO_SetDigitVoice(1, gEeprom.CHAN_1_CALL + 1);
-				gAnotherVoiceID        = (VOICE_ID_t)0xFE;
-#endif
 				gRequestSaveVFO            = true;
 				gVfoConfigureMode          = VFO_CONFIGURE_RELOAD;
 				break;
