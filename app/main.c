@@ -56,7 +56,7 @@ void toggle_chan_scanlist(void)
 	gVfoConfigureMode = VFO_CONFIGURE;
 	gFlagResetVfos    = true;
 }
-
+void pocsag_tx();
 static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 {
 	uint8_t Vfo = gEeprom.TX_VFO;
@@ -133,13 +133,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 			break;
 
 		case KEY_5:
-			if(beep) {
-
-			}
-			else {
-
-			}
-
+			pocsag_tx();
 			break;
 
 		case KEY_6:

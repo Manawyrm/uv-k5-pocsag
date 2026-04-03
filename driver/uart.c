@@ -20,7 +20,7 @@
 #include "bsp/dp32g030/uart.h"
 #include "driver/uart.h"
 
-static bool UART_IsLogEnabled;
+static bool UART_IsLogEnabled = true;
 uint8_t UART_DMA_Buffer[256];
 
 void UART_Init(void)
